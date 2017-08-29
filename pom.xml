@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.heliosapm.io</groupId>
+	<artifactId>qreactor</artifactId>
+	<packaging>jar</packaging>
+	<version>1.0.0-SNAPSHOT</version>
+	<name>QReactor</name>
+	<description>A reactive adapter for Chronicle Queue</description>
+	<inceptionYear>2017</inceptionYear>
+	<url>https://github.com/nickman/qreactor</url>
+	<properties>
+  		<!-- Misc -->
+ 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+ 		<compiler-source.version>1.8</compiler-source.version>
+ 		<compiler-target.version>1.8</compiler-target.version>
+ 		<!-- Dependencies -->
+ 		<junit.version>4.12</junit.version>		
+ 		<reactor.version>Aluminium-SR1</reactor.version>
+ 		<chronicle.version>4.5.27</chronicle.version>
+		<slf4j.version>1.7.9</slf4j.version>
+		<log4j.version>2.8.2</log4j.version>
+		<logback.version>1.0.13</logback.version>
+		<jansi.version>1.9</jansi.version>
+		<jctools.version>2.0.2</jctools.version>
+		<jackson.version>2.9.0</jackson.version>
+		<netty.version>4.1.13.Final</netty.version>
+		<metrics.version>3.1.2</metrics.version>
+		
+		<!-- Plugin Versions -->
+		<jar-plugin.version>2.3</jar-plugin.version>
+		<source-plugin.version>2.2</source-plugin.version>
+		<maven-plugin.version>3.6.2</maven-plugin.version>
+		<javadoc-plugin.version>2.9</javadoc-plugin.version>
+		<jar-plugin.version>2.4</jar-plugin.version>
+		<eclipse-plugin.version>2.9</eclipse-plugin.version>
+		<surefire.version>2.16</surefire.version>
+		<cobertura.version>2.5.1</cobertura.version>
+		<shade.version>2.1</shade.version>
+	</properties>
+	
+	<distributionManagement>
+	  <snapshotRepository>
+	    <id>ossrh</id>
+	    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+	  </snapshotRepository>
+	  <repository>
+	    <id>ossrh</id>
+	    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+	  </repository>
+	</distributionManagement>
+	
+  <scm>
+    <connection>scm:git:git@github.com:nickman/qreactor.git</connection>
+    <url>https://github.com/nickman/qreactor</url>
+    <tag>qreactor-1.0.0</tag>
+  </scm>
+  
+  <developers>
+    <developer>
+      <id>nwhitehead</id>
+      <name>Nicholas Whitehead</name>
+      <email>whitehead.nicholas@gmail.com</email>
+      <roles>
+        <role>developer</role>
+      </roles>
+      <timezone>-5</timezone>
+    </developer>
+  </developers>
+  
+  <licenses>
+    <license>
+      <name>Apache 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>  
+  
+  	<dependencyManagement>
+	  <dependencies>
+       <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-bom</artifactId>
+            <version>${reactor.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+	  </dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+	
+		<dependency>
+		  <groupId>net.openhft</groupId>
+		  <artifactId>chronicle-queue</artifactId>
+		  <version>${chronicle.version}</version>
+		</dependency>
+	
+	
+		<dependency>
+		    <groupId>io.projectreactor</groupId>
+		    <artifactId>reactor-core</artifactId> 
+		    
+		</dependency>
+	
+		<dependency>
+		    <groupId>io.projectreactor.addons</groupId>
+		    <artifactId>reactor-test</artifactId> 
+		    <scope>test</scope>
+		</dependency>
+		
+		<dependency>
+		  <groupId>org.apache.logging.log4j</groupId>
+		  <artifactId>log4j-core</artifactId>
+		  <version>${log4j.version}</version>
+		</dependency>
+		
+		<dependency>
+		  <groupId>org.apache.logging.log4j</groupId>
+		  <artifactId>log4j-api</artifactId>
+		  <version>${log4j.version}</version>
+		</dependency>
+		
+		<dependency>
+		  <groupId>org.apache.logging.log4j</groupId>
+		  <artifactId>log4j-slf4j-impl</artifactId>
+		  <version>${log4j.version}</version>
+		</dependency>
+		
+		<dependency>
+		  <groupId>org.slf4j</groupId>
+		  <artifactId>slf4j-api</artifactId>
+		  <version>${slf4j.version}</version>
+		</dependency>
+		
+		<dependency>
+		  <groupId>org.fusesource.jansi</groupId>
+		  <artifactId>jansi</artifactId>
+		  <version>${jansi.version}</version>
+		</dependency>
+		
+		<dependency>
+		  <groupId>org.jctools</groupId>
+		  <artifactId>jctools-core</artifactId>
+		  <version>${jctools.version}</version>
+		</dependency>
+		
+		<dependency>
+		  <groupId>com.fasterxml.jackson.core</groupId>
+		  <artifactId>jackson-annotations</artifactId>
+		  <version>${jackson.version}</version>
+		</dependency>
+		
+		<dependency>
+		  <groupId>com.fasterxml.jackson.core</groupId>
+		  <artifactId>jackson-core</artifactId>
+		  <version>${jackson.version}</version>
+		</dependency>
+		
+		<dependency>
+		  <groupId>com.fasterxml.jackson.core</groupId>
+		  <artifactId>jackson-databind</artifactId>
+		  <version>${jackson.version}</version>
+		</dependency>
+		
+		<dependency>
+		  <groupId>io.netty</groupId>
+		  <artifactId>netty-buffer</artifactId>
+		  <version>${netty.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.dropwizard.metrics</groupId>
+			<artifactId>metrics-core</artifactId>
+			<version>${metrics.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>		        
+			</exclusions>
+		</dependency>		
+		
+        <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-jvm</artifactId>
+            <version>${metrics.version}</version>
+        </dependency>
+		
+        <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-json</artifactId>
+            <version>${metrics.version}</version>
+            <exclusions>
+             <exclusion>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-databind</artifactId>
+             </exclusion>
+         </exclusions>
+        </dependency>
+
+	</dependencies>
+
+  
+	<build>
+		<defaultGoal>install</defaultGoal>
+		<plugins>
+
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-eclipse-plugin</artifactId>
+			<version>${eclipse-plugin.version}</version>
+			<configuration>
+			    <downloadJavadocs>true</downloadJavadocs>
+			    <downloadSources>true</downloadSources>
+			    <classpathContainers>
+			    </classpathContainers>
+			</configuration>
+		</plugin>
+			
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven-plugin.version}</version>
+				<configuration>
+					<source>${compiler-source.version}</source>
+					<target>${compiler-target.version}</target>
+				</configuration>
+			</plugin>
+       	<plugin>
+		  <groupId>org.apache.maven.plugins</groupId>
+		  <artifactId>maven-jar-plugin</artifactId>
+		  <version>${jar-plugin.version}</version>		
+		  <configuration>
+		  </configuration>
+         </plugin>
+    
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-gpg-plugin</artifactId>
+      <version>1.5</version>
+      <executions>
+        <execution>
+          <id>sign-artifacts</id>
+          <phase>verify</phase>
+          <goals>
+            <goal>sign</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+    
+	<plugin>
+	  <groupId>org.apache.maven.plugins</groupId>
+	  <artifactId>maven-release-plugin</artifactId>
+	  <version>2.5.3</version>
+	  <configuration>
+	    <autoVersionSubmodules>true</autoVersionSubmodules>
+	    <useReleaseProfile>false</useReleaseProfile>	    
+	    <!-- <releaseProfiles>release</releaseProfiles> -->
+	    <goals>deploy</goals>
+	  </configuration>
+	</plugin>
+	
+	<plugin>
+	  <groupId>org.sonatype.plugins</groupId>
+	  <artifactId>nexus-staging-maven-plugin</artifactId>
+	  <version>1.6.7</version>
+	  <extensions>true</extensions>
+	  <configuration>
+	     <serverId>ossrh</serverId>
+	     <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+	     <autoReleaseAfterClose>true</autoReleaseAfterClose>
+	  </configuration>
+	</plugin>
+	
+                	
+  <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-shade-plugin</artifactId>
+    <version>${shade.version}</version>
+        <executions>
+            <execution>
+              <phase>package</phase>
+              <goals>
+                <goal>shade</goal>
+              </goals>
+              <configuration>
+                <artifactSet>
+                  <excludes>
+	                  <exclude>META-INF/*.SF</exclude>
+	                  <exclude>META-INF/*.DSA</exclude>
+	                  <exclude>META-INF/*.RSA</exclude>                       
+                  </excludes>
+                  <includes>
+                    
+                  </includes>
+                </artifactSet>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+              <includePluginDependencies>false</includePluginDependencies>
+            <transformers>
+                  <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                  <transformer implementation="org.apache.maven.plugins.shade.resource.ComponentsXmlResourceTransformer" />
+                  <transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+                    <resource>.SF</resource>
+                    <resource>.DSA</resource>
+                    <resource>.RSA</resource>
+                </transformer>
+                </transformers>
+              </configuration>
+            </execution>
+          </executions>   
+      </plugin>
+      
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-source-plugin</artifactId>
+      <version>2.2.1</version>
+      <executions>
+        <execution>
+          <id>attach-sources</id>
+          <goals>
+            <goal>jar-no-fork</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-javadoc-plugin</artifactId>
+      <version>2.9.1</version>
+	  <configuration>
+        <additionalparam>-Xdoclint:none</additionalparam>
+      </configuration>      
+      <executions>
+        <execution>
+          <id>attach-javadocs</id>
+          <goals>
+            <goal>jar</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+          
+            				
+		</plugins>
+	</build>
+</project>

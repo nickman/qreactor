@@ -1,0 +1,8 @@
+Queue Attributes
+================
+File (directory name)
+Data Format  (BinaryWire or TextWire)
+Roll Cycle
+Reader Pause
+Buffered
+BufferMode (None, Copy, Asynchronous)
