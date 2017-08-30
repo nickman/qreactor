@@ -12,8 +12,16 @@
 // see <http://www.gnu.org/licenses/>.
 package com.heliosapm.io.qreactor.sink;
 
+import java.io.IOException;
+import java.util.stream.IntStream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.heliosapm.utils.io.StdInCommandHandler;
+
+import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Schedulers;
 
 /**
  * <p>Title: Spikes</p>
@@ -25,36 +33,100 @@ import org.slf4j.LoggerFactory;
 
 public class Spikes<T> {
 	private static final Logger LOG = LoggerFactory.getLogger(Spikes.class);
+	final EventProcessor eventProcessor = new EventProcessor();
+	
+	
+	Spikes() {
+		
+	}
+	
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		
-
+		LOG.info("Running Sink Spike");
+		Spikes<Integer> spikes =  new Spikes<>();
+		Flux<Integer> flux = spikes.sink();
+		spikes.runSink(flux);
+		flux.doOnComplete(() -> {
+			LOG.info("Bridge Flux Complete");
+		});
+		StdInCommandHandler.getInstance().run();
 	}
 	
+	class EventProcessor {
+		QSink<Integer> q = null;
+		public void register(QSink<Integer> sink) {
+			q = sink;
+			IntStream.range(0, 10).parallel()
+				.forEach(i -> {
+					sink.onMessage(i);
+				});
+			try {
+				sink.close();
+			} catch (Exception x) {}
+		}
+	}
 	
-	private void sink() {
-		Flux<Integer> bridge = Flux.create(sink -> {
-		    myEventProcessor.register( 
-		      new MyEventListener<String>() { 
-
-		        public void onDataChunk(Integer message) {
-		          for(String s : chunk) {
-		            sink.next(s); 
-		          }
-		        }
-
-		        public void processComplete() {
-		            sink.complete(); 
-		        }
-		    });
+	private void runSink(Flux<Integer> flux) {
+		sink();
+		flux
+		.doOnRequest(lv -> {
+			LOG.info("CONSUMER REQUEST: {}", lv);
+		})
+		.doOnComplete(() -> {
+			LOG.info("CONSUMER COMPLETE");
+		})
+		.doOnNext(i -> {
+			LOG.info("CONSUMER NEXT: {}", i);
+		})
+		.doFinally(sig -> {
+			LOG.info("CONSUMER TERMINATED: {}", sig);
+		})
+		.subscribe(i -> {
+			LOG.info("CONSUMER: {}", i);
 		});
 	}
 	
-	interface MyEventListener<T> {
-	    void onMessage(T message);
-	    void processComplete();
-	}	
+	private Flux<Integer> sink() {
+		Flux<Integer> bridge = Flux.<Integer>create(sink -> {
+			
+			eventProcessor.register( 
+		      new QSink<Integer>() {
+
+				@Override
+				public void close() throws IOException {
+					sink.complete();
+					LOG.info("Sink: QSink Closed");
+					
+				}
+
+				@Override
+				public void onMessage(Integer message) {
+					LOG.info("Sink: Message: {}", message);
+					sink.next(message);
+				}
+
+				@Override
+				public void processComplete() {
+					LOG.info("Sink: Process Complete");
+					
+				} 
+
+//		        public void onDataChunk(Integer message) {
+//		          for(String s : chunk) {
+//		            sink.next(s); 
+//		          }
+//		        }
+//
+//		        public void processComplete() {
+//		            sink.complete(); 
+//		        }
+		    });
+		}).publishOn(Schedulers.parallel()).log();
+		return bridge;
+	}
+	
+
 
 }

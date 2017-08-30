@@ -10,11 +10,11 @@
 // General Public License for more details.  You should have received a copy
 // of the GNU Lesser General Public License along with this program.  If not,
 // see <http://www.gnu.org/licenses/>.
-package com.heliosapm.io.qreactor.sink;
+package com.heliosapm.io.qreactor.queue;
 
 import org.jctools.maps.NonBlockingHashMap;
 
-import com.heliosapm.io.qreactor.sink.Sink.SinkBuilder;
+import com.heliosapm.io.qreactor.queue.Sink.SinkBuilder;
 
 /**
  * <p>Title: SinkRepo</p>

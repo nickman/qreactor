@@ -14,7 +14,6 @@ package com.heliosapm.io.qreactor.sink;
 
 import java.io.IOException;
 
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 
 /**
@@ -23,12 +22,13 @@ import reactor.core.publisher.FluxSink;
  * <p>Company: Helios Development Group LLC</p>
  * @author Whitehead (nwhitehead AT heliosdev DOT org)
  * <p><code>com.heliosapm.io.qreactor.sink.QSinkImpl</code></p>
+ * @param <T> The type of Object being sunk
  */
 
-class QSinkImpl<T> implements QSink<T> {
+public class QSinkImpl<T> implements QSink<T> {
 	private final FluxSink<T> emitter;
 
-	QSinkImpl(FluxSink<T> emitter) {
+	public QSinkImpl(FluxSink<T> emitter) {
 		this.emitter = emitter;
 	}
 	

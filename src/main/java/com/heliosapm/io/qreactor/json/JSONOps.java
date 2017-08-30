@@ -631,9 +631,10 @@ public class JSONOps {
 	/**
 	 * Serializes the passed object to a Chronicle Bytes
 	 * @param object The object to serialize
+	 * @param gzip true to gzip, false otherwise
 	 * @return the chronicle bytes
 	 */
-	public static Bytes<?> serializeToChronicleBytes(final Object object) {
+	public static Bytes<?> serializeToChronicleBytes(final Object object, final boolean gzip) {
 		if (object == null) throw new IllegalArgumentException("Object was null");
 		final Bytes<?> bytes = NativeBytes.nativeBytes();
 		final OutputStream os = new OutputStream(){
@@ -641,18 +642,41 @@ public class JSONOps {
 			public void write(int b) throws IOException {
 				bytes.writeInt(b);
 			}
+			@Override
+			public void write(byte[] byteArr) throws IOException {
+				bytes.write(byteArr);				
+			}
+			@Override
+			public void write(byte[] byteArr, int off, int len) throws IOException {
+				bytes.write(byteArr, off, len);
+			}			
 		};
+		GZIPOutputStream gos = null;
 		try {
-			serialize(object, os);
+			gos = gzip ? new GZIPOutputStream(os, 1024, false) : null;
+			serialize(object, gzip ? gos : os);
+			if(gzip) {
+				gos.finish();
+				gos.flush();
+			}
 			os.flush();
 			os.close();
 			return bytes;
 		} catch (Exception ex) {
 			throw new RuntimeException("Failed to write object to buffer", ex);
 		} finally {
+			if(gos!=null) try { gos.close(); } catch (Exception x) {/* No Op */}
 			try { os.close(); } catch (Exception x) {/* No Op */}
-		}
-		
+		}		
+	}
+	
+	/**
+	 * Serializes the passed object to a Chronicle Bytes with no compression
+	 * @param object The object to serialize
+	 * @return the chronicle bytes
+	 */
+	public static Bytes<?> serializeToChronicleBytes(final Object object) {
+		return serializeToChronicleBytes(object, false);
 	}
 	
 	

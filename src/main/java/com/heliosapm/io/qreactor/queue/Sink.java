@@ -1,16 +1,5 @@
-// This file is part of OpenTSDB.
-// Copyright (C) 2010-2016  The OpenTSDB Authors.
-//
-// This program is free software: you can redistribute it and/or modify it
-// under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 2.1 of the License, or (at your
-// option) any later version.  This program is distributed in the hope that it
-// will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
-// of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
-// General Public License for more details.  You should have received a copy
-// of the GNU Lesser General Public License along with this program.  If not,
-// see <http://www.gnu.org/licenses/>.
-package com.heliosapm.io.qreactor.sink;
+
+package com.heliosapm.io.qreactor.queue;
 
 import java.io.File;
 import java.util.Objects;
@@ -22,7 +11,7 @@ import net.openhft.chronicle.wire.WireType;
 
 /**
  * <p>Title: Sink</p>
- * <p>Description: </p> 
+ * <p>Description: Defines a sink endpoint for queueing a message</p> 
  * <p>Company: Helios Development Group LLC</p>
  * @author Whitehead (nwhitehead AT heliosdev DOT org)
  * <p><code>com.heliosapm.io.qreactor.sink.Sink</code></p>
@@ -37,7 +26,7 @@ public interface Sink<T> {
 //	Buffered
 //	BufferMode (None, Copy, Asynchronous)
 	
-	 
+	
 
 	public class SinkBuilder<T> {
 		private final File sinkFile;
@@ -55,31 +44,51 @@ public interface Sink<T> {
 		}
 
 		/**
-		 * Returns 
+		 * Returns the sink file
 		 * @return the sinkFile
 		 */
 		public File getSinkFile() {
 			return sinkFile;
 		}
 		
+		/**
+		 * Sets the roll cycle for the queue data files
+		 * @param rollCycle A queue roll cycle
+		 * @return this builder
+		 */
 		public SinkBuilder<T> rollCycle(RollCycles rollCycle) {
 			Objects.requireNonNull(rollCycle, "rollCycle");
 			this.rollCycle = rollCycle;
 			return this;
 		}
 		
+		/**
+		 * Sets the wire type of the sink's queue
+		 * @param wireType The wire type of the queue
+		 * @return this builder
+		 */
 		public SinkBuilder<T> wireType(WireType wireType) {
 			Objects.requireNonNull(wireType, "wireType");
 			this.wireType = wireType;
 			return this;
 		}
 		
+		/**
+		 * Sets the buffer mode
+		 * @param bufferMode the buffer mode (None, Copy or Asynchronous)
+		 * @return this builder
+		 */
 		public SinkBuilder<T> writeBufferMode(BufferMode bufferMode) {
 			Objects.requireNonNull(bufferMode, "bufferMode");
 			this.writeBufferMode = bufferMode;
 			return this;
 		}
 				
+		/**
+		 * Sets the buffer enablement for queue
+		 * @param buffered true to buffer, false otherwise
+		 * @return this builder
+		 */
 		public SinkBuilder<T> buffered(boolean buffered) {
 			this.buffered = buffered;
 			return this;
@@ -89,6 +98,10 @@ public interface Sink<T> {
 			return new SinkImpl<T>(messageType, sinkFile, rollCycle, wireType, buffered, writeBufferMode);
 		}
 		
+		/**
+		 * Builds the sink
+		 * @return the sink
+		 */
 		public Sink<T> build() {
 			return SinkRepo.<T>sink(this);
 			

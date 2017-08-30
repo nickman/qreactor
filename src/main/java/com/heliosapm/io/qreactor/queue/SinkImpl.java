@@ -1,16 +1,5 @@
-// This file is part of OpenTSDB.
-// Copyright (C) 2010-2016  The OpenTSDB Authors.
-//
-// This program is free software: you can redistribute it and/or modify it
-// under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 2.1 of the License, or (at your
-// option) any later version.  This program is distributed in the hope that it
-// will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
-// of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
-// General Public License for more details.  You should have received a copy
-// of the GNU Lesser General Public License along with this program.  If not,
-// see <http://www.gnu.org/licenses/>.
-package com.heliosapm.io.qreactor.sink;
+
+package com.heliosapm.io.qreactor.queue;
 
 import java.io.File;
 import java.util.Set;
@@ -23,17 +12,20 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.heliosapm.io.qreactor.json.JSONOps;
+import com.heliosapm.io.qreactor.sink.QSink;
+import com.heliosapm.io.qreactor.sink.QSinkImpl;
 
 import net.openhft.chronicle.bytes.Bytes;
 import net.openhft.chronicle.bytes.BytesRingBufferStats;
 import net.openhft.chronicle.bytes.BytesStore;
 import net.openhft.chronicle.bytes.WriteBytesMarshallable;
 import net.openhft.chronicle.queue.BufferMode;
+import net.openhft.chronicle.queue.ExcerptAppender;
 import net.openhft.chronicle.queue.RollCycle;
 import net.openhft.chronicle.queue.impl.single.SingleChronicleQueue;
 import net.openhft.chronicle.queue.impl.single.SingleChronicleQueueBuilder;
 import net.openhft.chronicle.wire.Marshallable;
-import net.openhft.chronicle.wire.Wire;
+import net.openhft.chronicle.wire.WireKey;
 import net.openhft.chronicle.wire.WireType;
 import net.openhft.chronicle.wire.WriteMarshallable;
 import reactor.core.publisher.Flux;
@@ -69,7 +61,12 @@ public class SinkImpl<T> implements Sink<T>, Consumer<BytesRingBufferStats> {
 		this.wireType = wireType;
 		this.buffered = buffered;
 		this.writeBufferMode = writeBufferMode;
+		
 		SingleChronicleQueueBuilder<?> builder = SingleChronicleQueueBuilder.builder(sinkFile, wireType)
+//		SingleChronicleQueueBuilder<?> builder = SingleChronicleQueueBuilder.binary(sinkFile)
+//		SingleChronicleQueueBuilder<?> builder = SingleChronicleQueueBuilder.text(sinkFile)
+//		SingleChronicleQueueBuilder<?> builder = SingleChronicleQueueBuilder.
+			
 			.rollCycle(rollCycle)
 			.buffered(buffered)
 			.writeBufferMode(writeBufferMode);
@@ -79,6 +76,10 @@ public class SinkImpl<T> implements Sink<T>, Consumer<BytesRingBufferStats> {
 		LOG.info("Created sink: {}", sinkFile.getAbsolutePath());
 		writer = writer();
 		
+	}
+	
+	public QSink<T> sink() {
+		return sink(OverflowStrategy.ERROR);
 	}
 	
 	public QSink<T> sink(OverflowStrategy backpressure) {
@@ -92,9 +93,6 @@ public class SinkImpl<T> implements Sink<T>, Consumer<BytesRingBufferStats> {
 		flux.doFinally(sig -> {
 			subs.remove(flux);
 		});
-		
-		
-		
 		return new QSinkImpl<T>(em.get());
 	}
 
@@ -136,6 +134,13 @@ public class SinkImpl<T> implements Sink<T>, Consumer<BytesRingBufferStats> {
 					bytes.release();
 				}
 			};
+		} else if(CharSequence.class.isAssignableFrom(messageType)) {
+			return new Consumer<T>() {
+				@Override
+				public void accept(T t) {
+					queue.acquireAppender().writeText((CharSequence)t);
+				}
+			};
 		}
 		throw new IllegalStateException("Failed to determine write strategy");
 	}
@@ -146,7 +151,35 @@ public class SinkImpl<T> implements Sink<T>, Consumer<BytesRingBufferStats> {
 	}
 	
 	public static void main(String[] args) {
-		//new SinkImpl();
+		SinkImpl<String> sink = (SinkImpl<String>)Sink.builder(String.class, new File("/tmp/qreactor/foo"))
+				.wireType(WireType.TEXT)
+				.build();
+		LOG.info("Sink: {}", sink);
+		ExcerptAppender appender =  sink.queue.acquireAppender();
+		WireKey key = new WireKey() {
+
+			@Override
+			public CharSequence name() {
+				return "FooKey";
+			}
+			
+		};
+		
+		appender.writeMessage(key, "YYY");
+		
+//		DocumentContext dc = appender.writingDocument();
+//		dc.wire().write().text("YoYo!");
+//		dc.close();
+
+		appender.writeDocument(w -> {
+			LOG.info("w: {} / {}", w.getClass().getName(), System.identityHashCode(w));
+			w.write("foo").marshallable(m -> {
+				LOG.info("m: {} / {}", m.getClass().getName(), System.identityHashCode(m));
+				m.write("fooval").text(new java.util.Date().toString());
+			});
+		});
+		
+		
 	}
 
 
